@@ -29,7 +29,13 @@ GLfloat posatual_y = 0;
 GLfloat posfinal_x = 0;
 GLfloat posfinal_y = 0;
 
+//Contrala o movimento das patas
+GLint tipo_movimento = 0; // 0=parado p1=1 e p2=2
+GLfloat move_pata1   = 0.0;
+GLfloat move_pata2   = 0.0;
+
 void move_Aranha(int passo);
+void reinicia_Patas();
 void corpoAranha(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y);
 void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y);
 
@@ -78,43 +84,47 @@ void display() {
 	   //****      Desenhando as patas ***
 	   //***************************************************
 
-	   //Empilha a pata 1
-	   glPushMatrix();
+		//Empilha a pata 1
+		glPushMatrix();
 		   glColor3f(1.0, 1.0, 0.0);
 		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
-		   desenhapata(-30, 0.20, 0, 0.60, 0.010);
+		   desenhapata(35+move_pata2, 0.08, 0.20, 0.60, 0.010);
 
-		   glColor3f(1.0f, 0.0f, 0.0f);
-		   desenhapata(0, 0.60, 0, 0.60, 0.010);
+		   //RGB [%]: 35.7–16.5–45.9 - ROXO
+		   glColor3f(0.35f, 0.16f, 0.45f);
+		   desenhapata(-45, 0.60, 0, 0.60, 0.010);
 		glPopMatrix();
 
 		//Empilha a pata 2
 		glPushMatrix();
 		   glColor3f(1.0, 1.0, 0.0);
 		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
-		   desenhapata(35, 0.08, 0.20, 0.60, 0.010);
+		   desenhapata(0+move_pata1, 0.08, 0.20, 0.60, 0.010);
 
-		   glColor3f(1.0f, 0.0f, 0.0f);
-		   desenhapata(0, 0.60, 0, 0.60, 0.010);
+		   //RGB [%]: 92.5–30.2–64.3 - ROSA
+		   glColor3f(0.92f, 0.30f, 0.64f);
+		   desenhapata(-30, 0.60, 0, 0.60, 0.010);
 		glPopMatrix();
 
 		//Empilha a pata 3
 		glPushMatrix();
 		   glColor3f(1.0, 1.0, 0.0);
 		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
-		   desenhapata(angulo_teste, 0.15, 0.10, 0.60, 0.010);
+		   desenhapata(0+move_pata2, 0.15, 0.10, 0.30, 0.010);
 
-		   glColor3f(1.0f, 0.0f, 0.0f);
-		   desenhapata(-30, 0.60, 0, 0.60, 0.010);
+		   //RGB [%]: 24.7–61.2–61.2 - VERDE AZULADO
+		   glColor3f(0.24f, 0.61f, 0.61f);
+		   desenhapata(-30, 0.30, 0, 0.30, 0.010);
 		glPopMatrix();
 
 		//Empilha a pata 4
-		glPushMatrix();
+	   glPushMatrix();
 		   glColor3f(1.0, 1.0, 0.0);
 		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
-		   desenhapata(angulo_teste, 0.08, 0.20, 0.60, 0.010);
+		   desenhapata(-30+move_pata1, 0.20, 0, 0.60, 0.010);
 
-		   glColor3f(1.0f, 0.0f, 0.0f);
+		   //RGB [%]: 15.3–45.9–32.5 - VERDE
+		   glColor3f(0.15f, 0.45f, 0.32f);
 		   desenhapata(-30, 0.60, 0, 0.60, 0.010);
 		glPopMatrix();
 
@@ -173,6 +183,9 @@ void mouseclick(int button, int action, int x, int y)
 
     if ((button == GLUT_LEFT_BUTTON) && (action == GLUT_DOWN))
     {
+    	//Seta o tipo de movimento para começar a mexer as patas
+    	tipo_movimento = 1;
+
     	GLint altura_tela  = glutGet(GLUT_WINDOW_HEIGHT);
 		GLint largura_tela = glutGet(GLUT_WINDOW_WIDTH);
 
@@ -202,18 +215,47 @@ void mouseclick(int button, int action, int x, int y)
 void move_Aranha(int passo)
 	{
 
-	GLfloat velocidade = .01;
+	GLfloat velocidade = .03;
+	GLfloat velocidade_pata = 2.0;
 
 	//atualiza posicao
 	if(posatual_x != posfinal_x)
-		posatual_x = posatual_x + (cos(angulo_alvo) * velocidade);
+		{
+			posatual_x = posatual_x + (cos(angulo_alvo) * velocidade);
+
+			if(tipo_movimento == 1)
+				{
+					//Movimento das patas
+					move_pata1 +=  velocidade_pata;
+					move_pata2 += -velocidade_pata;
+
+					if(move_pata1 == 10)
+						tipo_movimento = 2;
+				}
+			else if(tipo_movimento == 2)
+				{
+					//Movimento das patas
+					move_pata1 += -velocidade_pata;
+					move_pata2 +=  velocidade_pata;
+
+					if(move_pata1 == -10)
+						tipo_movimento = 1;
+				}
+		}
+
 	if(posatual_y != posfinal_y)
 		posatual_y = posatual_y + (sin(angulo_alvo) * velocidade);
 
 	if(cos(angulo_alvo) < 0 && posatual_x < posfinal_x)
-		posatual_x = posfinal_x;
+		{
+			posatual_x = posfinal_x;
+			reinicia_Patas();
+		}
 	else if(cos(angulo_alvo) > 0 && posatual_x > posfinal_x)
-		posatual_x = posfinal_x;
+		{
+			posatual_x = posfinal_x;
+			reinicia_Patas();
+		}
 	if(sin(angulo_alvo) < 0 && posatual_y < posfinal_y)
 		posatual_y = posfinal_y;
 	else if(sin(angulo_alvo) > 0 && posatual_y > posfinal_y)
@@ -221,17 +263,16 @@ void move_Aranha(int passo)
 
 
 	glutPostRedisplay();
-	glutTimerFunc(10,move_Aranha, 1);
+	glutTimerFunc(50,move_Aranha, 1);
 
 	}
 
-// Função chamada quando o mouse anda sobre a janele
-// e NÃO HÁ botão pressionado
-void MouseAndandoNaoPressionado (int x, int y)
-{
-	//posdest_x = x;
-	//posdest_y = y;
-}
+void reinicia_Patas()
+	{
+		//Quando a aranha parar as patas sempre retornarão pra posição inicial
+		move_pata1 = 0.0;
+		move_pata2 = 0.0;
+	}
 
 int main(int argc, char** argv)
 {
@@ -260,10 +301,10 @@ int main(int argc, char** argv)
   glutDisplayFunc(display);
 
   //Função que executa a animação
-  glutTimerFunc(10,move_Aranha,1);
+  glutTimerFunc(50,move_Aranha,1);
 
   // movimento SEM botão pressionado
-  glutPassiveMotionFunc(MouseAndandoNaoPressionado);
+  //glutPassiveMotionFunc(MouseAndandoNaoPressionado);
 
   // Indica que sempre que uma tecla for pressionada no teclado, GLUT deverá chama a função keyboard() para tratar eventos de teclado (keyboard callback).
   // A função de teclado deve possuir o seguinte protótipo:
