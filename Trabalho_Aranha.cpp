@@ -29,7 +29,7 @@ GLfloat posatual_y = 0;
 GLfloat posfinal_x = 0;
 GLfloat posfinal_y = 0;
 
-void bola(int passo);
+void move_Aranha(int passo);
 void corpoAranha(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y);
 void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y);
 
@@ -199,7 +199,7 @@ void mouseclick(int button, int action, int x, int y)
   //display();
 }
 
-void bola(int passo)
+void move_Aranha(int passo)
 	{
 
 	GLfloat velocidade = .01;
@@ -221,7 +221,7 @@ void bola(int passo)
 
 
 	glutPostRedisplay();
-	glutTimerFunc(10,bola, 1);
+	glutTimerFunc(10,move_Aranha, 1);
 
 	}
 
@@ -260,7 +260,7 @@ int main(int argc, char** argv)
   glutDisplayFunc(display);
 
   //Função que executa a animação
-  glutTimerFunc(10,bola,1);
+  glutTimerFunc(10,move_Aranha,1);
 
   // movimento SEM botão pressionado
   glutPassiveMotionFunc(MouseAndandoNaoPressionado);
