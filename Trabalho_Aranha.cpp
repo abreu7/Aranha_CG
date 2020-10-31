@@ -1,8 +1,8 @@
 /*
- * Tentantiva de fazer um objeto seguir o mouse
+ * Trabalho 1 de CG - Aranha
  *
- *  Created on: 27 de out de 2020
- *      Author: T3500855
+ *  Created on: out de 2020
+ *      Author:
  */
 
 
@@ -33,6 +33,8 @@ GLfloat posfinal_y = 0;
 GLint tipo_movimento = 0; // 0=parado p1=1 e p2=2
 GLfloat move_pata1   = 0.0;
 GLfloat move_pata2   = 0.0;
+GLfloat tam_pata     = 0.20;
+GLfloat larg_pata    = 0.020;
 
 void move_Aranha(int passo);
 void reinicia_Patas();
@@ -69,11 +71,12 @@ void display() {
    	   glScalef(0.5, 0.5, 0);
    	   //Desenha o Corpo da Aranha
    	   //(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
-   	   corpoAranha(angulo_alvo_graus-90, 0, 0, 0.20, 0.20);
+   	   corpoAranha(angulo_alvo_graus-90, 0, 0, 0.15, 0.15);
 
 	   //Empilha a cabeça da aranha
 	   glPushMatrix();
-		   glColor3f(255.0, 255.0, 0.0);
+	   	   //RGB [%]: 100–7.8–7.8 - VERMELHO
+		   glColor3f(1.0, 0.0, 0.0);
 		   //Desenha a Cabeça da Aranha
 		   corpoAranha(0, 0, 0.30, 0.10, 0.10);
 		   //Desempilha a cabeça da aranha
@@ -84,48 +87,92 @@ void display() {
 	   //****      Desenhando as patas ***
 	   //***************************************************
 
-		//Empilha a pata 1
+		//Empilha a pata 1D
 		glPushMatrix();
 		   glColor3f(1.0, 1.0, 0.0);
 		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
-		   desenhapata(35+move_pata2, 0.08, 0.20, 0.60, 0.010);
+		   desenhapata(35+move_pata2, 0.08, 0.20, tam_pata, larg_pata);
 
 		   //RGB [%]: 35.7–16.5–45.9 - ROXO
-		   glColor3f(0.35f, 0.16f, 0.45f);
-		   desenhapata(-45, 0.60, 0, 0.60, 0.010);
+		   //glColor3f(0.35f, 0.16f, 0.45f);
+		   desenhapata(-45, tam_pata, 0, tam_pata, larg_pata);
 		glPopMatrix();
 
-		//Empilha a pata 2
+		//Empilha a pata 2D
 		glPushMatrix();
 		   glColor3f(1.0, 1.0, 0.0);
 		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
-		   desenhapata(0+move_pata1, 0.08, 0.20, 0.60, 0.010);
+		   desenhapata(20+move_pata1, 0.12, 0.15, tam_pata, larg_pata);
 
 		   //RGB [%]: 92.5–30.2–64.3 - ROSA
-		   glColor3f(0.92f, 0.30f, 0.64f);
-		   desenhapata(-30, 0.60, 0, 0.60, 0.010);
+		   //glColor3f(0.92f, 0.30f, 0.64f);
+		   desenhapata(-30, tam_pata, 0, tam_pata, larg_pata);
 		glPopMatrix();
 
-		//Empilha a pata 3
+		//Empilha a pata 3D
 		glPushMatrix();
 		   glColor3f(1.0, 1.0, 0.0);
 		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
-		   desenhapata(0+move_pata2, 0.15, 0.10, 0.30, 0.010);
+		   desenhapata(0+move_pata2, 0.15, 0.10, tam_pata, larg_pata);
 
 		   //RGB [%]: 24.7–61.2–61.2 - VERDE AZULADO
-		   glColor3f(0.24f, 0.61f, 0.61f);
-		   desenhapata(-30, 0.30, 0, 0.30, 0.010);
+		   //glColor3f(0.24f, 0.61f, 0.61f);
+		   desenhapata(-30, tam_pata, 0, tam_pata, larg_pata);
 		glPopMatrix();
 
-		//Empilha a pata 4
+		//Empilha a pata 4D
 	   glPushMatrix();
 		   glColor3f(1.0, 1.0, 0.0);
 		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
-		   desenhapata(-30+move_pata1, 0.20, 0, 0.60, 0.010);
+		   desenhapata(-30+move_pata1, 0.20, 0, tam_pata, larg_pata);
 
 		   //RGB [%]: 15.3–45.9–32.5 - VERDE
-		   glColor3f(0.15f, 0.45f, 0.32f);
-		   desenhapata(-30, 0.60, 0, 0.60, 0.010);
+		   //glColor3f(0.15f, 0.45f, 0.32f);
+		   desenhapata(-30, tam_pata, 0, tam_pata, larg_pata);
+		glPopMatrix();
+
+		//Empilha a pata 1E
+		glPushMatrix();
+		   glColor3f(1.0, 1.0, 0.0);
+		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
+		   desenhapata(145+move_pata2, -0.08, 0.20, tam_pata, larg_pata);
+
+		   //RGB [%]: 35.7–16.5–45.9 - ROXO
+		   //glColor3f(0.35f, 0.16f, 0.45f);
+		   desenhapata(45, tam_pata, 0, tam_pata, larg_pata);
+		glPopMatrix();
+
+		//Empilha a pata 2E
+		glPushMatrix();
+		   glColor3f(1.0, 1.0, 0.0);
+		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
+		   desenhapata(160+move_pata1, -0.12, 0.15, tam_pata, larg_pata);
+
+		   //RGB [%]: 92.5–30.2–64.3 - ROSA
+		   //glColor3f(0.92f, 0.30f, 0.64f);
+		   desenhapata(30, tam_pata, 0, tam_pata, larg_pata);
+		glPopMatrix();
+
+		//Empilha a pata 3E
+		glPushMatrix();
+		   glColor3f(1.0, 1.0, 0.0);
+		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
+		   desenhapata(180+move_pata2, -0.15, 0.10, tam_pata, larg_pata);
+
+		   //RGB [%]: 24.7–61.2–61.2 - VERDE AZULADO
+		   //glColor3f(0.24f, 0.61f, 0.61f);
+		   desenhapata(30, tam_pata, 0, tam_pata, larg_pata);
+		glPopMatrix();
+
+		//Empilha a pata 4E
+	   glPushMatrix();
+		   glColor3f(1.0, 1.0, 0.0);
+		   //void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
+		   desenhapata(210+move_pata1, -0.20, 0, tam_pata, larg_pata);
+
+		   //RGB [%]: 15.3–45.9–32.5 - VERDE
+		   //glColor3f(0.15f, 0.45f, 0.32f);
+		   desenhapata(30, tam_pata, 0, tam_pata, larg_pata);
 		glPopMatrix();
 
    glPopMatrix();
