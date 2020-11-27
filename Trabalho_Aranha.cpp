@@ -9,6 +9,7 @@
 #include <GL/glut.h>
 #include <math.h>
 #include <iostream>
+#include "stb_image.h"
 
 using namespace std;
 
@@ -23,8 +24,8 @@ GLfloat angulo_alvo = 0;
 GLint angulo_alvo_graus = 90;
 GLfloat angulo_teste = 0;
 
-GLfloat posatual_x = 0;
-GLfloat posatual_y = 0;
+GLfloat posatual_x = 0.1;
+GLfloat posatual_y = 0.1;
 //Ponto de destino
 GLfloat posfinal_x = 0;
 GLfloat posfinal_y = 0;
@@ -36,45 +37,157 @@ GLfloat move_pata2   = 0.0;
 GLfloat tam_pata     = 0.20;
 GLfloat larg_pata    = 0.020;
 
+GLfloat olho_x = 1, olho_y = 1, olho_z = 1;
+
+// Textura
+GLuint texID[3];
+const char* textureFileNames[3] = {"texturas/container.jpg", "texturas/container.jpg", "texturas/container.jpg"};
+
+GLUquadricObj *objeto;
+
 void move_Aranha(int passo);
 void reinicia_Patas();
+void Aranha();
 void corpoAranha(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y);
 void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y);
+void desenhaChao();
 
 void init(void)
 {
 	// define a cor de background da janela
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 
+	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_NORMALIZE);
+
+	glEnable(GL_TEXTURE_2D);
+}
+
+void reshape(int w, int h)
+{
+	GLfloat aspecto = (GLfloat)w/(GLfloat)h;
+
 	// define o sistema de visualização - tipo de projeção
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-1, 1, -1, 1, -1, 1);
+	gluPerspective(65, aspecto, 1, 100);
+	//glOrtho(-1, 1, -1, 1, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
 
-void display() {
+void display()
+{
+	GLfloat tamCamera_x;
+	GLfloat tamCamera_y;
 
-  // Limpa a janela, colocando na tela a cor definida pela função glClearColor
-  glClear(GL_COLOR_BUFFER_BIT);
+	tamCamera_x = glutGet(GLUT_WINDOW_WIDTH)  / 2;
+	tamCamera_y = glutGet(GLUT_WINDOW_HEIGHT) / 2;
 
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  //void glutSolidSphere(GLdouble radius, GLint slices, GLint stacks
-  glColor3f(.2, .21, .46);
+	// Limpa a janela, colocando na tela a cor definida pela função glClearColor
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	//void glutSolidSphere(GLdouble radius, GLint slices, GLint stacks
+	//glColor3f(.2, .21, .46);
+
+	glViewport(0, 0, (GLsizei) tamCamera_x, (GLsizei) tamCamera_y);
+	glLoadIdentity();
+	gluLookAt(olho_x, olho_y, olho_z, posatual_x, posatual_y, 0, 0, 0, 1);
+   	glPushMatrix();
+   	glTranslatef(.7, .3, 0);
+	glutSolidCube(.5);
+	glPopMatrix();
+	Aranha();
+	desenhaChao();
+
+	glViewport(tamCamera_x, 0, (GLsizei) tamCamera_x, (GLsizei) tamCamera_y);
+	glLoadIdentity();
+	gluLookAt(0, 0, 2, posatual_x, posatual_y, 0, 0, 0, 1);
+	Aranha();
+	desenhaChao();
+
+	glViewport(0, tamCamera_y, (GLsizei) tamCamera_x, (GLsizei) tamCamera_y);
+	glLoadIdentity();
+	gluLookAt(0, 2, 0, posatual_x, posatual_y, 0, 0, 0, 1);
+	Aranha();
+	desenhaChao();
+
+	glViewport(tamCamera_x, tamCamera_y, (GLsizei) tamCamera_x, (GLsizei) tamCamera_y);
+	glLoadIdentity();
+	gluLookAt(2, 0, 0, posatual_x, posatual_y, 0, 0, 0, 1);
+	Aranha();
+	desenhaChao();
+
+	// Libera o buffer de comando de desenho para fazer o desenho acontecer o mais rápido possível.
+	glutSwapBuffers();
+}
+
+void carregaObjeto()
+{
+	objeto = gluNewQuadric();
+	gluQuadricDrawStyle( objeto, GLU_FILL);
+	gluQuadricNormals( objeto, GLU_SMOOTH);
+	gluQuadricOrientation( objeto, GLU_OUTSIDE);
+	gluQuadricTexture( objeto, GL_TRUE);
+
+}
+
+void loadTextures()
+{
+
+	int width, height, nrChannels;
+	unsigned char *data;
+
+	glGenTextures(3, texID);
+
+	for(int i = 0; i < 3;i++)
+	{
+	glBindTexture(GL_TEXTURE_2D, texID[i]);
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// load and generate the texture
+
+		data = stbi_load(textureFileNames[i], &width, &height, &nrChannels, 0);
+
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		//glGenerateMipmap(GL_TEXTURE_2D);
+		//glTexParameteri  (GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE );
+	}
+	else
+	{
+		 printf("Failed to load texture\n");
+	}
+	stbi_image_free(data);
+	}
+
+}
+
+void Aranha() {
 
   //Empilha o corpo inteiro da aranha
    glPushMatrix();
    	   glTranslatef(posatual_x, posatual_y, 0);
-   	   glScalef(0.5, 0.5, 0);
+   	   glScalef(0.5, 0.5, 0.5);
    	   //Desenha o Corpo da Aranha
    	   //(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
+   	   //glColor3f(.2, .21, .46);
+   	   glColor3f(1.0, 1.0, 1.0);
+   	   glBindTexture(GL_TEXTURE_2D, texID[0]);
    	   corpoAranha(angulo_alvo_graus-90, 0, 0, 0.15, 0.15);
 
 	   //Empilha a cabeça da aranha
 	   glPushMatrix();
+	   	   glBindTexture(GL_TEXTURE_2D, 0);
 	   	   //RGB [%]: 100–7.8–7.8 - VERMELHO
 		   glColor3f(1.0, 0.0, 0.0);
 		   //Desenha a Cabeça da Aranha
@@ -178,8 +291,24 @@ void display() {
    glPopMatrix();
    //Desempilha o corpo inteiro da aranha
 
- // Libera o buffer de comando de desenho para fazer o desenho acontecer o mais rápido possível.
- glutSwapBuffers();
+}
+
+void desenhaChao()
+{
+	glPushMatrix();
+	glBindTexture(GL_TEXTURE_2D, texID[1]);
+	glEnable(GL_TEXTURE_2D);
+	glBegin(GL_POLYGON);
+	glTexCoord2f(0, 0);
+	glVertex3f(-1, -1, -0.25);
+	glTexCoord2f(1, 0);
+	glVertex3f(1, -1, -0.25);
+	glTexCoord2f(1, 1);
+	glVertex3f(1, 1, -0.25);
+	glTexCoord2f(0, 1);
+	glVertex3f(-1, 1, -0.25);
+	glEnd();
+	glPopMatrix();
 }
 
 void keyboard( unsigned char key, int x, int y )
@@ -197,10 +326,82 @@ void keyboard( unsigned char key, int x, int y )
 		angulo_teste -=5;
 
 	break;
+
+	case 'x' :
+		//glClearColor(1.0, 1.0, 1.0, 1.0);
+		olho_x +=0.1;
+
+	break;
+
+	case 'X' :
+		//glClearColor(1.0, 1.0, 1.0, 1.0);
+		olho_x -=0.1;
+
+	break;
+
+	case 'y' :
+		//glClearColor(1.0, 1.0, 1.0, 1.0);
+		olho_y +=0.1;
+
+	break;
+
+	case 'Y' :
+		//glClearColor(1.0, 1.0, 1.0, 1.0);
+		olho_y -=0.1;
+
+	break;
+
+	case 'z' :
+		//glClearColor(1.0, 1.0, 1.0, 1.0);
+		olho_z +=0.1;
+
+	break;
+
+	case 'Z' :
+		//glClearColor(1.0, 1.0, 1.0, 1.0);
+		olho_z -=0.1;
+
+	break;
 	}
-display();
+
+	display();
 }
 
+void keyboardSpecial (int key, int x, int y )
+{
+	GLfloat velocidade = 0.03;
+	cout << "angulo_teste: " << angulo_teste << endl;
+		switch( key ) {
+		case GLUT_KEY_LEFT :
+			//glClearColor(0.0, 0.0, 0.0, 1.0);
+			//angulo_teste +=5;
+			angulo_alvo_graus +=5;
+
+		break;
+
+		case GLUT_KEY_RIGHT :
+			//glClearColor(1.0, 1.0, 1.0, 1.0);
+			angulo_alvo_graus -=5;
+
+		break;
+
+		case GLUT_KEY_UP :
+					//glClearColor(1.0, 1.0, 1.0, 1.0);
+					posatual_x = posatual_x + (cos(angulo_alvo_graus*M_PI/180.0) * velocidade);
+					posatual_y = posatual_y + (sin(angulo_alvo_graus*M_PI/180.0) * velocidade);
+
+				break;
+
+		case GLUT_KEY_DOWN :
+							//glClearColor(1.0, 1.0, 1.0, 1.0);
+							posatual_x = posatual_x + (cos((angulo_alvo_graus+180.0)*M_PI/180.0) * velocidade);
+							posatual_y = posatual_y + (sin((angulo_alvo_graus+180.0)*M_PI/180.0) * velocidade);
+
+				break;
+
+		}
+	display();
+}
 
 void corpoAranha(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLfloat size_x, GLfloat size_y)
 	{
@@ -209,8 +410,9 @@ void corpoAranha(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLf
 	   	glRotatef(angulo, 0, 0, 1);
 
 	   	glPushMatrix();
-		glScalef(size_x, size_y, 0);
-		glutSolidSphere(1, 15, 15);
+		glScalef(size_x, size_y, size_y);
+		// glutSolidSphere(1, 15, 15);
+		gluSphere(objeto, 1, 15, 15);
 		glPopMatrix();
 	}
 
@@ -220,7 +422,7 @@ void desenhapata(GLfloat angulo, GLfloat translacao_x, GLfloat translacao_y, GLf
 		glRotatef(angulo, 0, 0, 1);
 		glPushMatrix();
 		glTranslatef(size_x/2, 0, 0);
-		glScalef(size_x, size_y, 0);
+		glScalef(size_x, size_y, size_y);
 		glutSolidCube(1);
 		glPopMatrix();
 	}
@@ -262,55 +464,55 @@ void mouseclick(int button, int action, int x, int y)
 void move_Aranha(int passo)
 	{
 
-	GLfloat velocidade = .03;
-	GLfloat velocidade_pata = 2.0;
-
-	//atualiza posicao
-	if(posatual_x != posfinal_x)
-		{
-			posatual_x = posatual_x + (cos(angulo_alvo) * velocidade);
-
-			if(tipo_movimento == 1)
-				{
-					//Movimento das patas
-					move_pata1 +=  velocidade_pata;
-					move_pata2 += -velocidade_pata;
-
-					if(move_pata1 == 10)
-						tipo_movimento = 2;
-				}
-			else if(tipo_movimento == 2)
-				{
-					//Movimento das patas
-					move_pata1 += -velocidade_pata;
-					move_pata2 +=  velocidade_pata;
-
-					if(move_pata1 == -10)
-						tipo_movimento = 1;
-				}
-		}
-
-	if(posatual_y != posfinal_y)
-		posatual_y = posatual_y + (sin(angulo_alvo) * velocidade);
-
-	if(cos(angulo_alvo) < 0 && posatual_x < posfinal_x)
-		{
-			posatual_x = posfinal_x;
-			reinicia_Patas();
-		}
-	else if(cos(angulo_alvo) > 0 && posatual_x > posfinal_x)
-		{
-			posatual_x = posfinal_x;
-			reinicia_Patas();
-		}
-	if(sin(angulo_alvo) < 0 && posatual_y < posfinal_y)
-		posatual_y = posfinal_y;
-	else if(sin(angulo_alvo) > 0 && posatual_y > posfinal_y)
-		posatual_y = posfinal_y;
-
-
-	glutPostRedisplay();
-	glutTimerFunc(50,move_Aranha, 1);
+//	GLfloat velocidade = .03;
+//	GLfloat velocidade_pata = 2.0;
+//
+//	//atualiza posicao
+//	if(posatual_x != posfinal_x)
+//		{
+//			posatual_x = posatual_x + (cos(angulo_alvo) * velocidade);
+//
+//			if(tipo_movimento == 1)
+//				{
+//					//Movimento das patas
+//					move_pata1 +=  velocidade_pata;
+//					move_pata2 += -velocidade_pata;
+//
+//					if(move_pata1 == 10)
+//						tipo_movimento = 2;
+//				}
+//			else if(tipo_movimento == 2)
+//				{
+//					//Movimento das patas
+//					move_pata1 += -velocidade_pata;
+//					move_pata2 +=  velocidade_pata;
+//
+//					if(move_pata1 == -10)
+//						tipo_movimento = 1;
+//				}
+//		}
+//
+//	if(posatual_y != posfinal_y)
+//		posatual_y = posatual_y + (sin(angulo_alvo) * velocidade);
+//
+//	if(cos(angulo_alvo) < 0 && posatual_x < posfinal_x)
+//		{
+//			posatual_x = posfinal_x;
+//			reinicia_Patas();
+//		}
+//	else if(cos(angulo_alvo) > 0 && posatual_x > posfinal_x)
+//		{
+//			posatual_x = posfinal_x;
+//			reinicia_Patas();
+//		}
+//	if(sin(angulo_alvo) < 0 && posatual_y < posfinal_y)
+//		posatual_y = posfinal_y;
+//	else if(sin(angulo_alvo) > 0 && posatual_y > posfinal_y)
+//		posatual_y = posfinal_y;
+//
+//
+//	glutPostRedisplay();
+//	glutTimerFunc(50,move_Aranha, 1);
 
 	}
 
@@ -328,10 +530,11 @@ int main(int argc, char** argv)
  //É possível passar argumentos para a função glutInit provenientes da linha de execução, tais como informações sobre a geometria da tela
   glutInit(&argc, argv);
 
+
   //Informa à biblioteca GLUT o modo do display a ser utilizado quando a janela gráfica for criada.
   // O flag GLUT_SINGLE força o uso de uma janela com buffer simples, significando que todos os desenhos serão feitos diretamente nesta janela.
   // O flag GLUT_RGB determina que o modelo de cor utilizado será o modelo RGB.
-  glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
+  glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
   //Define o tamanho inicial da janela, 256x256 pixels, e a posição inicial do seu canto superior esquerdo na tela, (x, y)=(100, 100).
   glutInitWindowSize (600, 600);
@@ -342,6 +545,8 @@ int main(int argc, char** argv)
 
   //Nesta função é definido o estado inicial do OpenGL. Ajustes podem ser feitos para o usuário nessa função.
   init();
+  loadTextures();
+  carregaObjeto();
 
   // Define display() como a função de desenho (display callback) para a janela corrente.
   // Quando GLUT determina que esta janela deve ser redesenhada, a função de desenho é chamada.
@@ -356,7 +561,9 @@ int main(int argc, char** argv)
   // Indica que sempre que uma tecla for pressionada no teclado, GLUT deverá chama a função keyboard() para tratar eventos de teclado (keyboard callback).
   // A função de teclado deve possuir o seguinte protótipo:
   glutKeyboardFunc(keyboard);
+  glutSpecialFunc(keyboardSpecial);
 
+  glutReshapeFunc(reshape);
 
   glutMouseFunc(mouseclick);
 
